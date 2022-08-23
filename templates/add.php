@@ -1,8 +1,12 @@
-<?php 
+<?php
+
+include('config/db_connect.php');
+
+
 //if data is sent to us , we need to get that data ,  do something with it before the page is sent back 
 //if no data is sent to us , we simply don't anything and display the page back
 
-//if(isset())    //checks if a certain value has been send to us
+//if(isset())    //checks if a certain value has been set to us
 
 $title = $email = $ingredients = ''; // ingredients equals to empty strings
 $errors = array('email' =>'', 'title'=>'', 'ingredients'=>'');   //ensures that the errors are displayed in the form
@@ -10,8 +14,10 @@ $errors = array('email' =>'', 'title'=>'', 'ingredients'=>'');   //ensures that 
 
 if(isset($_POST['submit'])){        //checks if a any value has been send to us via the get method
       //  echo $_POST['email'];        //the email, title, ingredients is going to be stored in the get array
-      //  echo $_POST['title'];
-      //  echo $_POST['ingredients'];                     
+      //  echo $_PO ST['title'];
+      //  echo $_POST['ingredients'];
+      //the  echo $_GETS['email']; extracts the data which was sent to the browser in the url
+      //they are called globals                     
 
 //check email
 if(empty($_POST['email'])){
@@ -64,17 +70,35 @@ if(empty($_POST['ingredients'])){
          if(array_filter($errors)){    //returns true if there are no errors in the form
           //  echo ' errors in the form';
          } else {
-
-
-           // echo 'form valid';
-           
+           // echo 'form valid';          
            //redirecting the user to the home page
-           header('location: index.php');
+
+
+//passing the info(emails, ingredients and the title) to the database
+           //the code below protects the database, it avoids maliciouse info to enter the data base
+           $email =  mysqli_real_escape_string($conn, $_POST['email']);  
+           $title = mysqli_real_escape_string($conn, $_POST['title']);  //
+           $ingredients = mysqli_real_escape_string($conn, $_POST['ingredients']);  //
+
+
+//create sql into the database
+$sql = " INSERT INTO pizzas(title, email, ingredients) VALUES ( '$title','$email','$ingredients' )";   
+
+
+//save to the database and check
+       if(mysqli_query ($conn,$sql)){
+         //success
+               header('Location: http://localhost:8080/ninja/PROJECTS/index.php');
+       }
+         else {
+            //err0r
+               echo 'query error:' . mysqli_error($conn);
          }
+       }
+        
+      }
 
-} ; // this is the end of the post  
-
-
+; // this is the end of the post  
 
 
 
@@ -84,10 +108,12 @@ if(empty($_POST['ingredients'])){
 <!DOCTYPE html>
 <html lang="en">
 
+<?php   include('header.php') ;     ?>
+
 <section class="container grey-text ">
     <h4 class="center">Add a Pizza </h4>
     <!-- form -->
-    <form  class="white" action="add.php" method="POST">   
+    <form  class= "white" action= "add.php" method="POST">   
         <!-- get method sends the data  in the url -->
         <!-- it loads the file  action="add.php, once it is loaded in the url,the url gets the file and performs a certain action above in the php tag   -->
         <label> Your Email: </label>
@@ -106,15 +132,14 @@ if(empty($_POST['ingredients'])){
 
 
         <div class ="center ">
-          <input type="submit" name="submit" value="submit" class = "btn brand z-deoth-0">
+          <input type="submit" name="submit" value="submit" class = "btn brand z-depth-0">
+          
     </div>
     </form>
 
 </section>
 
-
-
- <?php   include('templates/footer.php') ;     ?>
+<?php   include('footer.php') ;     ?>
 
 
 </html>
